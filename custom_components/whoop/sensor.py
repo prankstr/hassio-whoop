@@ -10,6 +10,7 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.const import (
@@ -36,26 +37,17 @@ def _parse_value(
         parsed_val: Any
         if target_type is float:
             parsed_val = float(value)
-            if precision is not None:
-                return round(parsed_val, precision)
-            return parsed_val
+            return round(parsed_val, precision) if precision is not None else parsed_val
         if target_type is int:
             try:
                 f_val = float(value)
-                if f_val == float(int(f_val)):
-                    return int(f_val)
-                _LOGGER.debug(
-                    "Value '%s' is float-like but expected int, returning as float for precision.",
-                    value,
-                )
-                return f_val
+                return int(f_val) if f_val == float(int(f_val)) else f_val
             except ValueError:
                 return int(value)
         if target_type is bool:
             return bool(value)
         return str(value)
     except (ValueError, TypeError):
-        _LOGGER.debug("Could not parse value '%s' to type %s", value, target_type)
         return None
 
 
@@ -68,9 +60,9 @@ def _get_nested_value(data_dict: Optional[Dict[str, Any]], keys: str) -> Any:
     for key_part in _keys:
         if isinstance(value, dict):
             value = value.get(key_part)
-            if value is None:
-                return None
         else:
+            return None
+        if value is None:
             return None
     return value
 
@@ -81,17 +73,16 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the WHOOP sensors from a config entry."""
-    coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
-    _LOGGER.debug(
-        "Setting up WHOOP sensors for entry %s (Principled Hybrid Model v2)",
-        entry.entry_id,
-    )
+    coordinator_data = hass.data[DOMAIN][entry.entry_id]
+    coordinator = coordinator_data["coordinator"]
+    device_info = coordinator_data["device_info"]
+    _LOGGER.debug("Setting up WHOOP sensors for device: %s", device_info.get("name"))
 
     sensors = [
-        # Profile
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "profile",
             "user_id",
             "User ID",
@@ -101,9 +92,10 @@ async def async_setup_entry(
             None,
             str,
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "profile",
             "email",
             "Email",
@@ -113,9 +105,10 @@ async def async_setup_entry(
             None,
             str,
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "profile",
             "first_name",
             "First Name",
@@ -125,9 +118,10 @@ async def async_setup_entry(
             None,
             str,
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "profile",
             "last_name",
             "Last Name",
@@ -137,10 +131,10 @@ async def async_setup_entry(
             None,
             str,
         ),
-        # Body Measurement
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "body_measurement",
             "height_meter",
             "Height",
@@ -151,9 +145,10 @@ async def async_setup_entry(
             float,
             2,
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "body_measurement",
             "weight_kilogram",
             "Weight",
@@ -164,9 +159,10 @@ async def async_setup_entry(
             float,
             2,
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "body_measurement",
             "max_heart_rate",
             "Max Heart Rate",
@@ -176,11 +172,11 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             int,
         ),
-        # Cycle
-        WhoopCycleOverviewSensor(coordinator, entry),
-        WhoopMetricSensor(
+        WhoopCycleOverviewSensor(coordinator, entry, device_info),
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_cycle.score",
             "strain",
             "Day Strain",
@@ -190,11 +186,11 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             2,
-            parent_event_path="latest_cycle",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_cycle.score",
             "kilojoule",
             "Day Kilojoules",
@@ -204,11 +200,11 @@ async def async_setup_entry(
             SensorStateClass.TOTAL_INCREASING,
             float,
             1,
-            parent_event_path="latest_cycle",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_cycle.score",
             "average_heart_rate",
             "Day Average Heart Rate",
@@ -217,11 +213,11 @@ async def async_setup_entry(
             None,
             SensorStateClass.MEASUREMENT,
             int,
-            parent_event_path="latest_cycle",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_cycle.score",
             "max_heart_rate",
             "Day Max Heart Rate",
@@ -230,13 +226,12 @@ async def async_setup_entry(
             None,
             SensorStateClass.MEASUREMENT,
             int,
-            parent_event_path="latest_cycle",
         ),
-        # Recovery
-        WhoopRecoveryOverviewSensor(coordinator, entry),
-        WhoopMetricSensor(
+        WhoopRecoveryOverviewSensor(coordinator, entry, device_info),
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_recovery.score",
             "recovery_score",
             "Recovery Score",
@@ -246,11 +241,11 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             1,
-            parent_event_path="latest_recovery",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_recovery.score",
             "hrv_rmssd_milli",
             "HRV",
@@ -260,11 +255,11 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             2,
-            parent_event_path="latest_recovery",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_recovery.score",
             "resting_heart_rate",
             "Resting Heart Rate",
@@ -274,11 +269,11 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             1,
-            parent_event_path="latest_recovery",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_recovery.score",
             "spo2_percentage",
             "SpO2",
@@ -288,11 +283,11 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             2,
-            parent_event_path="latest_recovery",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_recovery.score",
             "skin_temp_celsius",
             "Skin Temperature",
@@ -302,13 +297,12 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             1,
-            parent_event_path="latest_recovery",
         ),
-        # Sleep
-        WhoopSleepOverviewSensor(coordinator, entry),
-        WhoopMetricSensor(
+        WhoopSleepOverviewSensor(coordinator, entry, device_info),
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_sleep.score",
             "sleep_performance_percentage",
             "Sleep Performance",
@@ -318,11 +312,11 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             1,
-            parent_event_path="latest_sleep",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_sleep.score",
             "respiratory_rate",
             "Sleep Respiratory Rate",
@@ -332,11 +326,11 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             2,
-            parent_event_path="latest_sleep",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_sleep.score",
             "sleep_consistency_percentage",
             "Sleep Consistency",
@@ -346,11 +340,11 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             1,
-            parent_event_path="latest_sleep",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_sleep.score",
             "sleep_efficiency_percentage",
             "Sleep Efficiency",
@@ -360,11 +354,11 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             2,
-            parent_event_path="latest_sleep",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_sleep.score.stage_summary",
             "total_in_bed_time_milli",
             "Sleep Time in Bed",
@@ -373,11 +367,11 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
-            parent_event_path="latest_sleep",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_sleep.score.stage_summary",
             "total_awake_time_milli",
             "Sleep Time Awake",
@@ -386,11 +380,11 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
-            parent_event_path="latest_sleep",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_sleep.score.stage_summary",
             "total_no_data_time_milli",
             "Sleep Time No Data",
@@ -399,11 +393,11 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
-            parent_event_path="latest_sleep",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_sleep.score.stage_summary",
             "total_light_sleep_time_milli",
             "Sleep Light Sleep Time",
@@ -412,11 +406,11 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
-            parent_event_path="latest_sleep",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_sleep.score.stage_summary",
             "total_slow_wave_sleep_time_milli",
             "Sleep SWS Time",
@@ -425,11 +419,11 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
-            parent_event_path="latest_sleep",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_sleep.score.stage_summary",
             "total_rem_sleep_time_milli",
             "Sleep REM Sleep Time",
@@ -438,11 +432,11 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
-            parent_event_path="latest_sleep",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_sleep.score.stage_summary",
             "sleep_cycle_count",
             "Sleep Cycles",
@@ -451,11 +445,11 @@ async def async_setup_entry(
             None,
             SensorStateClass.MEASUREMENT,
             int,
-            parent_event_path="latest_sleep",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_sleep.score.stage_summary",
             "disturbance_count",
             "Sleep Disturbances",
@@ -464,11 +458,11 @@ async def async_setup_entry(
             None,
             SensorStateClass.MEASUREMENT,
             int,
-            parent_event_path="latest_sleep",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_sleep.score.sleep_needed",
             "baseline_milli",
             "Sleep Baseline Need",
@@ -477,11 +471,11 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
-            parent_event_path="latest_sleep",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_sleep.score.sleep_needed",
             "need_from_sleep_debt_milli",
             "Sleep Debt Need",
@@ -490,11 +484,11 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
-            parent_event_path="latest_sleep",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_sleep.score.sleep_needed",
             "need_from_recent_strain_milli",
             "Sleep Strain Need",
@@ -503,11 +497,11 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
-            parent_event_path="latest_sleep",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_sleep.score.sleep_needed",
             "need_from_recent_nap_milli",
             "Sleep Nap Credit",
@@ -516,13 +510,12 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
-            parent_event_path="latest_sleep",
         ),
-        # Workout
-        WhoopWorkoutOverviewSensor(coordinator, entry),
-        WhoopMetricSensor(
+        WhoopWorkoutOverviewSensor(coordinator, entry, device_info),
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_workout.score",
             "strain",
             "Last Workout Strain",
@@ -532,11 +525,11 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             2,
-            parent_event_path="latest_workout",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_workout.score",
             "average_heart_rate",
             "Last Workout Average HR",
@@ -545,11 +538,11 @@ async def async_setup_entry(
             None,
             SensorStateClass.MEASUREMENT,
             int,
-            parent_event_path="latest_workout",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_workout.score",
             "max_heart_rate",
             "Last Workout Max HR",
@@ -558,11 +551,11 @@ async def async_setup_entry(
             None,
             SensorStateClass.MEASUREMENT,
             int,
-            parent_event_path="latest_workout",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_workout.score",
             "kilojoule",
             "Last Workout Kilojoules",
@@ -572,11 +565,11 @@ async def async_setup_entry(
             SensorStateClass.TOTAL_INCREASING,
             float,
             1,
-            parent_event_path="latest_workout",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_workout.score",
             "percent_recorded",
             "Last Workout Percent Recorded",
@@ -586,11 +579,11 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             1,
-            parent_event_path="latest_workout",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_workout.score",
             "distance_meter",
             "Last Workout Distance",
@@ -600,11 +593,11 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             0,
-            parent_event_path="latest_workout",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_workout.score",
             "altitude_gain_meter",
             "Last Workout Altitude Gain",
@@ -614,11 +607,11 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             1,
-            parent_event_path="latest_workout",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_workout.score",
             "altitude_change_meter",
             "Last Workout Altitude Change",
@@ -628,11 +621,11 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             1,
-            parent_event_path="latest_workout",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_workout.score.zone_duration",
             "zone_zero_milli",
             "Last Workout Zone 0 Time",
@@ -641,11 +634,11 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
-            parent_event_path="latest_workout",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_workout.score.zone_duration",
             "zone_one_milli",
             "Last Workout Zone 1 Time",
@@ -654,11 +647,11 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
-            parent_event_path="latest_workout",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_workout.score.zone_duration",
             "zone_two_milli",
             "Last Workout Zone 2 Time",
@@ -667,11 +660,11 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
-            parent_event_path="latest_workout",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_workout.score.zone_duration",
             "zone_three_milli",
             "Last Workout Zone 3 Time",
@@ -680,11 +673,11 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
-            parent_event_path="latest_workout",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_workout.score.zone_duration",
             "zone_four_milli",
             "Last Workout Zone 4 Time",
@@ -693,11 +686,11 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
-            parent_event_path="latest_workout",
         ),
-        WhoopMetricSensor(
+        WhoopDataSensor(
             coordinator,
             entry,
+            device_info,
             "latest_workout.score.zone_duration",
             "zone_five_milli",
             "Last Workout Zone 5 Time",
@@ -706,21 +699,22 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
-            parent_event_path="latest_workout",
         ),
     ]
     async_add_entities(sensors, update_before_add=True)
 
 
-class WhoopMetricSensor(CoordinatorEntity, SensorEntity):
+class WhoopDataSensor(CoordinatorEntity, SensorEntity):
     """Generic WHOOP Sensor for individual data points that need history."""
 
     _attr_attribution = "Data provided by WHOOP"
+    _attr_has_entity_name = True
 
     def __init__(
         self,
         coordinator,
         config_entry: ConfigEntry,
+        device_info: DeviceInfo,
         data_path: str,
         entity_key: str,
         friendly_name: str,
@@ -730,7 +724,6 @@ class WhoopMetricSensor(CoordinatorEntity, SensorEntity):
         state_class: Optional[SensorStateClass],
         expected_type: type,
         precision: Optional[int] = None,
-        parent_event_path: Optional[str] = None,
     ):
         """Initialize the sensor."""
         super().__init__(coordinator)
@@ -739,14 +732,14 @@ class WhoopMetricSensor(CoordinatorEntity, SensorEntity):
         self._entity_key = entity_key
         self._expected_type = expected_type
         self._precision = precision
-        self._parent_event_path = parent_event_path
 
         unique_id_path = self._data_path.replace(".", "_")
         unique_id_entity = self._entity_key.replace(".", "_")
         self._attr_unique_id = (
-            f"{config_entry.entry_id}_{DOMAIN}_{unique_id_path}_{unique_id_entity}"
+            f"{config_entry.entry_id}_{unique_id_path}_{unique_id_entity}"
         )
         self._attr_name = friendly_name
+        self._attr_device_info = device_info
 
         if icon:
             self._attr_icon = icon
@@ -775,21 +768,6 @@ class WhoopMetricSensor(CoordinatorEntity, SensorEntity):
         return parsed_value
 
     @property
-    def extra_state_attributes(self) -> Optional[Dict[str, Any]]:
-        """Return event context attributes if parent_event_path is defined."""
-        if self._parent_event_path:
-            parent_event_data = _get_nested_value(
-                self.coordinator.data, self._parent_event_path
-            )
-            if isinstance(parent_event_data, dict):
-                attrs = {}
-                attrs["parent_event_id"] = parent_event_data.get("id")
-                attrs["parent_event_start_time"] = parent_event_data.get("start")
-                attrs["parent_event_end_time"] = parent_event_data.get("end")
-                return {k: v for k, v in attrs.items() if v is not None}
-        return None
-
-    @property
     def available(self) -> bool:
         """Return if entity is available."""
         if not (super().available and self.coordinator.data):
@@ -803,13 +781,15 @@ class WhoopCycleOverviewSensor(CoordinatorEntity, SensorEntity):
 
     _attr_attribution = "Data provided by WHOOP"
     _attr_icon = "mdi:calendar-sync"
+    _attr_has_entity_name = True
 
-    def __init__(self, coordinator, config_entry: ConfigEntry):
+    def __init__(self, coordinator, config_entry: ConfigEntry, device_info: DeviceInfo):
         """Initialize the sensor."""
         super().__init__(coordinator)
         self.config_entry = config_entry
         self._attr_unique_id = f"{config_entry.entry_id}_{DOMAIN}_cycle_overview"
         self._attr_name = "Cycle Overview"
+        self._attr_device_info = device_info
 
     @property
     def native_value(self) -> Optional[str]:
@@ -851,13 +831,15 @@ class WhoopRecoveryOverviewSensor(CoordinatorEntity, SensorEntity):
 
     _attr_attribution = "Data provided by WHOOP"
     _attr_icon = "mdi:heart-check"
+    _attr_has_entity_name = True
 
-    def __init__(self, coordinator, config_entry: ConfigEntry):
+    def __init__(self, coordinator, config_entry: ConfigEntry, device_info: DeviceInfo):
         """Initialize the sensor."""
         super().__init__(coordinator)
         self.config_entry = config_entry
         self._attr_unique_id = f"{config_entry.entry_id}_{DOMAIN}_recovery_overview"
         self._attr_name = "Recovery Overview"
+        self._attr_device_info = device_info
 
     @property
     def native_value(self) -> Optional[str]:
@@ -896,13 +878,15 @@ class WhoopSleepOverviewSensor(CoordinatorEntity, SensorEntity):
 
     _attr_attribution = "Data provided by WHOOP"
     _attr_icon = "mdi:bed-empty"
+    _attr_has_entity_name = True
 
-    def __init__(self, coordinator, config_entry: ConfigEntry):
+    def __init__(self, coordinator, config_entry: ConfigEntry, device_info: DeviceInfo):
         """Initialize the sensor."""
         super().__init__(coordinator)
         self.config_entry = config_entry
         self._attr_unique_id = f"{config_entry.entry_id}_{DOMAIN}_sleep_overview"
         self._attr_name = "Sleep Overview"
+        self._attr_device_info = device_info
 
     @property
     def native_value(self) -> Optional[str]:
@@ -945,13 +929,15 @@ class WhoopWorkoutOverviewSensor(CoordinatorEntity, SensorEntity):
 
     _attr_attribution = "Data provided by WHOOP"
     _attr_icon = "mdi:weight-lifter"
+    _attr_has_entity_name = True
 
-    def __init__(self, coordinator, config_entry: ConfigEntry):
+    def __init__(self, coordinator, config_entry: ConfigEntry, device_info: DeviceInfo):
         """Initialize the sensor."""
         super().__init__(coordinator)
         self.config_entry = config_entry
         self._attr_unique_id = f"{config_entry.entry_id}_{DOMAIN}_workout_overview"
         self._attr_name = "Last Workout Overview"
+        self._attr_device_info = device_info
 
     @property
     def native_value(self) -> Optional[str]:

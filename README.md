@@ -128,9 +128,3 @@ Once configured, the integration creates sensors for your profile, body measurem
 * **Last Workout Zone 3 Time**: Time in HR Zone 3.
 * **Last Workout Zone 4 Time**: Time in HR Zone 4.
 * **Last Workout Zone 5 Time**: Time in HR Zone 5.
-
----
-**Note on Metric Sensors:**
-
-* Individual metric sensors("HRV", "Day Strain", "Sleep Time in Bed") will have attributes such as `parent_event_id`, `parent_event_start_time`, and `parent_event_end_time` to link them to the specific WHOOP event (Cycle, Recovery, Sleep, or Workout) they belong to. Not sure this is actually useful - we'll see..
-* "Duration" sensors will have their state in seconds, which Home Assistant typically displays in a more readable format.

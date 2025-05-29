@@ -9,6 +9,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.config_entry_oauth2_flow import (
     OAuth2Session,
     async_get_config_entry_implementation,
@@ -80,7 +81,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 "latest_cycle",
                 "latest_workout",
             ]
-            all_api_calls_returned_data = False
+            any_data_fetched = False
 
             for i, key in enumerate(keys):
                 result_item = results[i]
@@ -93,16 +94,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 else:
                     _LOGGER.debug("Successfully fetched data for %s.", key)
                     data_dict[key] = result_item
-                    all_api_calls_returned_data = True
+                    any_data_fetched = True
 
-            if not all_api_calls_returned_data and not any(
-                isinstance(r, dict) for r in results
-            ):
-                _LOGGER.warning("All WHOOP API calls failed or returned no data.")
+            if not any_data_fetched and not any(isinstance(r, dict) for r in results):
+                _LOGGER.warning(
+                    "All WHOOP API calls failed or returned no data in this update cycle."
+                )
 
             _LOGGER.debug(
-                "Coordinator data prepared: %s",
-                {k: type(v) for k, v in data_dict.items()},
+                "Coordinator data prepared (types): %s",
+                {k: type(v).__name__ for k, v in data_dict.items()},
             )
             return data_dict
 
@@ -128,7 +129,41 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await coordinator.async_config_entry_first_refresh()
     _LOGGER.debug("First coordinator refresh for WHOOP completed.")
 
-    hass.data[DOMAIN][entry.entry_id] = {"coordinator": coordinator}
+    user_profile_data = coordinator.data.get("profile") if coordinator.data else None
+
+    device_identifier: str
+    device_name_suffix: str
+
+    if (
+        user_profile_data
+        and isinstance(user_profile_data, dict)
+        and user_profile_data.get("user_id")
+    ):
+        device_identifier = str(user_profile_data.get("user_id"))
+        device_name_suffix = user_profile_data.get(
+            "first_name", f"User {device_identifier}"
+        )
+    else:
+        _LOGGER.warning(
+            "WHOOP user_id not found in profile data for entry %s; using config entry ID for device uniqueness.",
+            entry.entry_id,
+        )
+        device_identifier = entry.entry_id
+        device_name_suffix = entry.entry_id[:8]
+
+    device_info = DeviceInfo(
+        identifiers={(DOMAIN, device_identifier)},
+        name=f"WHOOP({device_name_suffix})",
+        manufacturer="WHOOP",
+        model="WHOOP Wearable",
+        entry_type="device",
+    )
+
+    hass.data[DOMAIN][entry.entry_id] = {
+        "coordinator": coordinator,
+        "device_info": device_info,
+    }
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
