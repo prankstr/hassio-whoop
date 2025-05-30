@@ -2,8 +2,8 @@
 
 Home Assistant integration for WHOOP. Fetches your latest fitness, sleep, and recovery and exposes them as sensors in Home Assistant.
 
->[!NOTE]
->This is an unofficial integration.
+>[!IMPORTANT]
+>This is an unofficial integration, I have nothing to do with WHOOP.
 
 ## Prerequisites
 
@@ -15,12 +15,14 @@ Home Assistant integration for WHOOP. Fetches your latest fitness, sleep, and re
     * **Privacy Policy:** Has to be a valid URL(e.g. https://dummy.com/privacy)
     * **Redirect URI(s):**
         `https://my.home-assistant.io/redirect/oauth`
-    * **Scopes:** Check the scopes you want metrics for. The integration will try to fetch everything regardless of what it has access to.
+    * **Scopes:** Check the scopes you want metrics for. I recommend checking all of them, Profile is required*
 
 After creating the app you will be able to see a **Client ID** and **Client Secret** for the app. You will need these during the integration setup in Home Assistant.
 
 >[!NOTE]
 >While Privacy Policy isnt listed as a required value I havent manged  to create an app without it, hence the dummy URL.
+>
+>*The integration uses your name from the Profile scope, primarily needed for multi-users support but used even for single users right now.
 
 ## Installation
 
@@ -36,8 +38,8 @@ This integration can be installed via [HACS](https://hacs.xyz/) (Home Assistant 
     * Click "ADD".
 3. **Install from HACS:**
     * Search for "WHOOP" in HACS" or click the button below.
-    * Click "DOWNLOAD".
-    * Restart Home Assistant when prompted.
+    * Click "DOWNLOAD" in the bottom right corner.
+    * Restart Home Assistant
 
  [![Open WHOOP on Home Assistant Community Store (HACS).](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=prankstr&repository=hassio-whoop&category=frontend)
 
