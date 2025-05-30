@@ -156,7 +156,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         name=f"WHOOP({device_name_suffix})",
         manufacturer="WHOOP",
         model="WHOOP Wearable",
-        entry_type="device",
     )
 
     hass.data[DOMAIN][entry.entry_id] = {
