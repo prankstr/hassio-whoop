@@ -9,9 +9,10 @@ Home Assistant integration for WHOOP. Fetches your latest fitness, sleep, and re
 
 1. **WHOOP Account**
 2. **WHOOP Developer Application:**
-    * Go to the [WHOOP Developer Dashboard](https://developer-dashboard.whoop.com/) (Log in > Your Apps > Create new App).
+    * Go to the [WHOOP Developer Dashboard](https://developer-dashboard.whoop.com/) (Log in > Apps > Create  App).
     * **Name:** e.g., "Home Assistant WHOOP"
     * **Contact:** Your email
+    * **Privacy Policy:** Has to be a valid URL(e.g. https://dummy.com/privacy)
     * **Redirect URI(s):**
         `https://my.home-assistant.io/redirect/oauth`
     * **Scopes:** Check the scopes you want metrics for. The integration will try to fetch everything regardless of what it has access to.
@@ -19,7 +20,7 @@ Home Assistant integration for WHOOP. Fetches your latest fitness, sleep, and re
 After creating the app you will be able to see a **Client ID** and **Client Secret** for the app. You will need these during the integration setup in Home Assistant.
 
 >[!NOTE]
->These should be all the required values but if the applications cant be created with vague errors start filling in the others with dummy values.
+>While Privacy Policy isnt listed as a required value I havent manged  to create an app without it, hence the dummy URL.
 
 ## Installation
 
