@@ -1,6 +1,6 @@
 # WHOOP Integration for Home Assistant
 
-Home Assistant integration for WHOOP. Fetches your latest fitness, sleep, and recovery and exposes them as sensors in Home Assistant.
+Home Assistant integration for WHOOP. Fetches your latest sleep, recovery, strain and workout metrics and exposes them as sensors in Home Assistant.
 
 >[!IMPORTANT]
 >This is an unofficial integration, I have nothing to do with WHOOP.
