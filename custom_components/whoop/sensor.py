@@ -91,6 +91,7 @@ async def async_setup_entry(
             None,
             None,
             str,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -104,6 +105,7 @@ async def async_setup_entry(
             None,
             None,
             str,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -117,6 +119,7 @@ async def async_setup_entry(
             None,
             None,
             str,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -130,6 +133,7 @@ async def async_setup_entry(
             None,
             None,
             str,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -144,6 +148,7 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             2,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -158,6 +163,7 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             2,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -171,6 +177,7 @@ async def async_setup_entry(
             None,
             SensorStateClass.MEASUREMENT,
             int,
+            enabled_by_default=False,
         ),
         WhoopCycleOverviewSensor(coordinator, entry, device_info),
         WhoopDataSensor(
@@ -200,6 +207,7 @@ async def async_setup_entry(
             SensorStateClass.TOTAL_INCREASING,
             float,
             1,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -213,6 +221,7 @@ async def async_setup_entry(
             None,
             SensorStateClass.MEASUREMENT,
             int,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -226,6 +235,7 @@ async def async_setup_entry(
             None,
             SensorStateClass.MEASUREMENT,
             int,
+            enabled_by_default=False,
         ),
         WhoopRecoveryOverviewSensor(coordinator, entry, device_info),
         WhoopDataSensor(
@@ -250,7 +260,7 @@ async def async_setup_entry(
             "hrv_rmssd_milli",
             "HRV",
             "ms",
-            "mdi:heart-analytics",
+            "mdi:heart-pulse",
             None,
             SensorStateClass.MEASUREMENT,
             float,
@@ -283,6 +293,7 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             2,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -297,6 +308,7 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             1,
+            enabled_by_default=False,
         ),
         WhoopSleepOverviewSensor(coordinator, entry, device_info),
         WhoopDataSensor(
@@ -326,6 +338,7 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             2,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -340,6 +353,7 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             1,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -354,6 +368,7 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             2,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -367,6 +382,7 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -380,6 +396,7 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -393,6 +410,7 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -406,6 +424,7 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -419,6 +438,7 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -432,6 +452,7 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -445,6 +466,7 @@ async def async_setup_entry(
             None,
             SensorStateClass.MEASUREMENT,
             int,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -458,6 +480,7 @@ async def async_setup_entry(
             None,
             SensorStateClass.MEASUREMENT,
             int,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -471,6 +494,7 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -484,6 +508,7 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -497,6 +522,7 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -510,6 +536,7 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
+            enabled_by_default=False,
         ),
         WhoopWorkoutOverviewSensor(coordinator, entry, device_info),
         WhoopDataSensor(
@@ -538,6 +565,7 @@ async def async_setup_entry(
             None,
             SensorStateClass.MEASUREMENT,
             int,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -551,6 +579,7 @@ async def async_setup_entry(
             None,
             SensorStateClass.MEASUREMENT,
             int,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -565,6 +594,7 @@ async def async_setup_entry(
             SensorStateClass.TOTAL_INCREASING,
             float,
             1,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -579,6 +609,7 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             1,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -593,6 +624,7 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             0,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -607,6 +639,7 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             1,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -621,6 +654,7 @@ async def async_setup_entry(
             SensorStateClass.MEASUREMENT,
             float,
             1,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -634,6 +668,7 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -647,6 +682,7 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -660,6 +696,7 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -673,6 +710,7 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -686,6 +724,7 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
+            enabled_by_default=False,
         ),
         WhoopDataSensor(
             coordinator,
@@ -699,6 +738,7 @@ async def async_setup_entry(
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
+            enabled_by_default=False,
         ),
     ]
     async_add_entities(sensors, update_before_add=True)
@@ -724,6 +764,7 @@ class WhoopDataSensor(CoordinatorEntity, SensorEntity):
         state_class: Optional[SensorStateClass],
         expected_type: type,
         precision: Optional[int] = None,
+        enabled_by_default: bool = True,
     ):
         """Initialize the sensor."""
         super().__init__(coordinator)
@@ -740,6 +781,7 @@ class WhoopDataSensor(CoordinatorEntity, SensorEntity):
         )
         self._attr_name = friendly_name
         self._attr_device_info = device_info
+        self._attr_entity_registry_enabled_default = enabled_by_default
 
         if icon:
             self._attr_icon = icon
@@ -782,6 +824,7 @@ class WhoopCycleOverviewSensor(CoordinatorEntity, SensorEntity):
     _attr_attribution = "Data provided by WHOOP"
     _attr_icon = "mdi:calendar-sync"
     _attr_has_entity_name = True
+    _attr_entity_registry_enabled_default = False
 
     def __init__(self, coordinator, config_entry: ConfigEntry, device_info: DeviceInfo):
         """Initialize the sensor."""
@@ -832,6 +875,7 @@ class WhoopRecoveryOverviewSensor(CoordinatorEntity, SensorEntity):
     _attr_attribution = "Data provided by WHOOP"
     _attr_icon = "mdi:heart-check"
     _attr_has_entity_name = True
+    _attr_entity_registry_enabled_default = False
 
     def __init__(self, coordinator, config_entry: ConfigEntry, device_info: DeviceInfo):
         """Initialize the sensor."""
@@ -879,6 +923,7 @@ class WhoopSleepOverviewSensor(CoordinatorEntity, SensorEntity):
     _attr_attribution = "Data provided by WHOOP"
     _attr_icon = "mdi:bed-empty"
     _attr_has_entity_name = True
+    _attr_entity_registry_enabled_default = False
 
     def __init__(self, coordinator, config_entry: ConfigEntry, device_info: DeviceInfo):
         """Initialize the sensor."""
@@ -930,6 +975,7 @@ class WhoopWorkoutOverviewSensor(CoordinatorEntity, SensorEntity):
     _attr_attribution = "Data provided by WHOOP"
     _attr_icon = "mdi:weight-lifter"
     _attr_has_entity_name = True
+    _attr_entity_registry_enabled_default = False
 
     def __init__(self, coordinator, config_entry: ConfigEntry, device_info: DeviceInfo):
         """Initialize the sensor."""

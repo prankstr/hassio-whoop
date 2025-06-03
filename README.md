@@ -2,6 +2,8 @@
 
 Home Assistant integration for WHOOP. Fetches your latest sleep, recovery, strain and workout metrics and exposes them as sensors in Home Assistant.
 
+![Sensor overview](https://github.com/prankstr/hassio-whoop/blob/main/images/sensors.png?raw=true)
+
 >[!IMPORTANT]
 >This is an unofficial integration, I have nothing to do with WHOOP.
 
@@ -12,7 +14,7 @@ Home Assistant integration for WHOOP. Fetches your latest sleep, recovery, strai
     * Go to the [WHOOP Developer Dashboard](https://developer-dashboard.whoop.com/) (Log in > Apps > Create  App).
     * **Name:** e.g., "Home Assistant WHOOP"
     * **Contact:** Your email
-    * **Privacy Policy:** Has to be a valid URL(e.g. https://dummy.com/privacy)
+    * **Privacy Policy:** Has to be a valid URL(e.g. <https://dummy.com/privacy>)
     * **Redirect URI(s):**
         `https://my.home-assistant.io/redirect/oauth`
     * **Scopes:** Check the scopes you want metrics for. I recommend checking all of them, Profile is required*
@@ -48,7 +50,7 @@ This integration can be installed via [HACS](https://hacs.xyz/) (Home Assistant 
 1. Go to **Settings > Devices & Services** in Home Assistant.
 2. Click **"+ ADD INTEGRATION"**.
 3. Search for and select **"WHOOP"**.
-4. A dialog will appear: **"Create Application Credential for WHOOP"**.
+4. A dialog will appear: **"Add Credentials"**.
     * **Name:** A name for the credentials, e.g. "WHOOP Integration"
     * **Client ID:** Enter the Client ID from your WHOOP Developer App.
     * **Client Secret:** Enter the Client Secret from your WHOOP Developer App.
@@ -58,7 +60,29 @@ This integration can be installed via [HACS](https://hacs.xyz/) (Home Assistant 
 
 ## Available Sensors
 
-Once configured, the integration creates sensors for your profile, body measurements, and detailed metrics for each major WHOOP category (Cycle, Recovery, Sleep, Workout). Metadata for each event type is available on its respective "Overview" sensor.
+Only a few key WHOOP metrics enabled by default but many additional detailed sensors are created but as disabled initially. You can enable any sensor you wish to track from the Home Assistant **Settings > Devices & Services > Entities** tab (filter by the WHOOP integration or device).
+
+**Enabled by Default:**
+
+* **Day Strain**: Your overall Strain score for the day.
+* **Recovery Score**: Your overall Recovery score.
+* **HRV**: Heart Rate Variability.
+* **Resting Heart Rate**: Your resting heart rate.
+* **Sleep Performance**: Your sleep performance score.
+* **Last Workout Strain**: Strain score for your most recent workout.
+
+**Available (Disabled by Default - Enable as Needed):**
+
+### Overview Sensors (Provide Contextual Attributes)
+
+* **Cycle Overview**: Current status of your physiological cycle.
+  * *Attributes:* Cycle ID, Start Time, End Time (if cycle is complete), User ID, Timezone Offset, Score State.
+* **Recovery Overview**: Status of your latest recovery period.
+  * *Attributes:* Cycle ID, Sleep ID, User ID, Created At, Updated At, User Calibrating status, Score State.
+* **Sleep Overview**: Status of your latest sleep period.
+  * *Attributes:* Sleep ID, User ID, Created At, Updated At, Start Time, End Time, Timezone Offset, Nap status, Score State.
+* **Last Workout Overview**: Status of your most recent workout.
+  * *Attributes:* Workout ID, User ID, Created At, Updated At, Start Time, End Time, Timezone Offset, Sport ID, Percent Recorded (from score), Score State.
 
 ### User Profile
 
@@ -69,34 +93,23 @@ Once configured, the integration creates sensors for your profile, body measurem
 
 ### Body Measurements
 
-* **Height**: Your height.
-* **Weight**: Your weight.
+* **Height**: Your height (in meters).
+* **Weight**: Your weight (in kilograms).
 * **Max Heart Rate**: Your calculated maximum heart rate.
 
-### Cycle (Current Day)
+### Additional Cycle Metrics
 
-* **Cycle Overview**: Provides the current status(scored or not) of your current cycle.
-  * *Attributes include:* Cycle ID, Start Time, End Time (if cycle is complete), User ID, Timezone Offset.
-* **Day Strain**: Your overall Strain score for the day.
-* **Day Kilojoules**: Kilojoules expended during the day.
-* **Day Average Heart Rate**: Average heart rate during the day.
-* **Day Max Heart Rate**: Maximum heart rate during the day.
+* **Day Kilojoules**: Kilojoules expended during the current day.
+* **Day Average Heart Rate**: Average heart rate during the current day.
+* **Day Max Heart Rate**: Maximum heart rate during the current cycle day.
 
-### Recovery (Latest)
+### Additional Recovery Metrics
 
-* **Recovery Overview**: Provides the status of your latest recovery period.
-  * *Attributes include:* Cycle ID, Sleep ID, User ID, Created At, Updated At, User Calibrating status.
-* **Recovery Score**: Your overall Recovery score.
-* **HRV**: Heart Rate Variability.
-* **Resting Heart Rate**: Your resting heart rate.
 * **SpO2**: Blood oxygen saturation.
 * **Skin Temperature**: Skin temperature.
 
-### Sleep (Latest)
+### Additional Sleep Metrics
 
-* **Sleep Overview**: Provides the status of your latest sleep period.
-  * *Attributes include:* Sleep ID, User ID, Created At, Updated At, Start Time, End Time, Timezone Offset, Nap status.
-* **Sleep Performance**: Your sleep performance score.
 * **Sleep Respiratory Rate**: Your average respiratory rate during sleep.
 * **Sleep Consistency**: Your sleep consistency score.
 * **Sleep Efficiency**: Your sleep efficiency score.
@@ -113,18 +126,15 @@ Once configured, the integration creates sensors for your profile, body measurem
 * **Sleep Strain Need**: Additional sleep needed due to recent strain.
 * **Sleep Nap Credit**: Reduction in sleep need due to recent naps.
 
-### Last Workout
+### Additional Last Workout Metrics
 
-* **Last Workout Overview**: Provides the status of your most recent workout.
-  * *Attributes include:* Workout ID, User ID, Created At, Updated At, Start Time, End Time, Timezone Offset, Sport ID, Percent Recorded from score.
-* **Last Workout Strain**: Strain score for your most recent workout.
-* **Last Workout Average HR**: Average heart rate during the last workout
-* **Last Workout Max HR**: Maximum heart rate during the last workout
+* **Last Workout Average HR**: Average heart rate during the last workout.
+* **Last Workout Max HR**: Maximum heart rate during the last workout.
 * **Last Workout Kilojoules**: Kilojoules expended during the last workout.
 * **Last Workout Percent Recorded**: Percentage of HR data recorded during the workout.
-* **Last Workout Distance**: Distance covered
-* **Last Workout Altitude Gain**: Altitude gained
-* **Last Workout Altitude Change**: Net altitude change
+* **Last Workout Distance**: Distance covered.
+* **Last Workout Altitude Gain**: Altitude gained.
+* **Last Workout Altitude Change**: Net altitude change.
 * **Last Workout Zone 0 Time**: Time in HR Zone 0.
 * **Last Workout Zone 1 Time**: Time in HR Zone 1.
 * **Last Workout Zone 2 Time**: Time in HR Zone 2.
