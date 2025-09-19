@@ -15,9 +15,10 @@ from homeassistant.helpers.config_entry_oauth2_flow import (
     async_get_config_entry_implementation,
 )
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers import entity_registry as er
 
 from .api import WhoopApiClient
-from .const import DOMAIN
+from .const import DOMAIN, CONFIG_FLOW_VERSION
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -174,3 +175,43 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id, None)
     return unload_ok
+
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    """Migrate an old config entry to a new version."""
+    if config_entry.version >= CONFIG_FLOW_VERSION:
+        return True
+
+    _LOGGER.info(
+        "Migrating WHOOP config entry from version %s to %s",
+        config_entry.version, CONFIG_FLOW_VERSION
+    )
+
+    if config_entry.version == 1:
+        ent_reg = er.async_get(hass)
+        entities = er.async_entries_for_config_entry(ent_reg, config_entry.entry_id)
+
+        old_data_path_part = "latest_workout_score_zone_duration"
+        new_data_path_part = "latest_workout_score_zone_durations"
+
+        for entity in entities:
+            if old_data_path_part in entity.unique_id:
+                prefix = f"{config_entry.entry_id}_{old_data_path_part}_"
+
+                if entity.unique_id.startswith(prefix):
+                    entity_key_part = entity.unique_id[len(prefix):]
+                    new_unique_id = f"{config_entry.entry_id}_{new_data_path_part}_{entity_key_part}"
+
+                    _LOGGER.debug(
+                        "Migrating unique_id for %s from [%s] to [%s]",
+                        entity.entity_id, entity.unique_id, new_unique_id
+                    )
+                    try:
+                        ent_reg.async_update_entity(entity.entity_id, new_unique_id=new_unique_id)
+                    except ValueError:
+                        _LOGGER.warning(
+                            "Could not migrate unique_id for %s, new id may already exist.",
+                            entity.entity_id
+                        )
+
+    _LOGGER.info("Successfully migrated WHOOP config entry.")
+    return True

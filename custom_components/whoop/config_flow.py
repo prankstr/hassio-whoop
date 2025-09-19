@@ -11,7 +11,7 @@ from homeassistant.helpers.aiohttp_client import (
 )
 from homeassistant.helpers.config_entry_oauth2_flow import LocalOAuth2Implementation
 
-from .const import DOMAIN, OAUTH2_AUTHORIZE, OAUTH2_TOKEN, SCOPES
+from .const import DOMAIN, CONFIG_FLOW_VERSION, OAUTH2_AUTHORIZE, OAUTH2_TOKEN, SCOPES
 from .api import WhoopApiClient
 
 _LOGGER = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ _LOGGER = logging.getLogger(__name__)
 class WhoopConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler):
     """Handle a config flow for WHOOP."""
 
-    VERSION = 1
+    VERSION = CONFIG_FLOW_VERSION
     DOMAIN = DOMAIN
     OAUTH2_CLIENT_NAME = "WHOOP"
 
