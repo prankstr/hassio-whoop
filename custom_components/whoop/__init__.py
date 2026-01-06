@@ -18,12 +18,54 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.helpers import entity_registry as er
 
 from .api import WhoopApiClient
-from .const import DOMAIN, CONFIG_FLOW_VERSION
+from .const import (
+    DOMAIN,
+    CONFIG_FLOW_VERSION,
+    CONF_DURATION_UNIT,
+    CONF_ENERGY_UNIT,
+    DURATION_MANUAL,
+    DEFAULT_DURATION_UNIT,
+    ENERGY_KILOJOULES,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = ["sensor"]
 SCAN_INTERVAL = timedelta(minutes=2)
+
+
+def _apply_duration_unit_overrides(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Apply duration unit overrides to entity registry based on options."""
+    duration_unit = entry.options.get(CONF_DURATION_UNIT, DEFAULT_DURATION_UNIT)
+
+    if duration_unit == DURATION_MANUAL:
+        _LOGGER.debug("Duration unit set to manual - not updating entity registry")
+        return
+
+    unit_map = {
+        "hours": "h",
+        "minutes": "min",
+        "seconds": "s",
+    }
+    target_unit = unit_map.get(duration_unit, "h")
+
+    _LOGGER.debug("Applying duration unit override: %s", target_unit)
+
+    ent_reg = er.async_get(hass)
+    entities = er.async_entries_for_config_entry(ent_reg, entry.entry_id)
+
+    for entity_entry in entities:
+        if entity_entry.original_device_class == "duration":
+            _LOGGER.debug(
+                "Updating entity %s unit to %s",
+                entity_entry.entity_id,
+                target_unit,
+            )
+            ent_reg.async_update_entity_options(
+                entity_entry.entity_id,
+                "sensor",
+                {"unit_of_measurement": target_unit},
+            )
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -165,7 +207,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     }
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    _apply_duration_unit_overrides(hass, entry)
+
+    entry.async_on_unload(entry.add_update_listener(async_options_updated))
+
     return True
+
+
+async def async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Handle options update - apply unit overrides and reload."""
+    _LOGGER.info("WHOOP options updated for entry: %s", entry.title)
+    _apply_duration_unit_overrides(hass, entry)
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -213,5 +267,35 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                             entity.entity_id
                         )
 
-    _LOGGER.info("Successfully migrated WHOOP config entry.")
+        hass.config_entries.async_update_entry(config_entry, version=2)
+
+    if config_entry.version == 2:
+        ent_reg = er.async_get(hass)
+        entities = er.async_entries_for_config_entry(ent_reg, config_entry.entry_id)
+
+        for entity_entry in entities:
+            if entity_entry.original_device_class == "duration":
+                existing_options = entity_entry.options.get("sensor", {})
+                if "unit_of_measurement" not in existing_options:
+                    ent_reg.async_update_entity_options(
+                        entity_entry.entity_id,
+                        "sensor",
+                        {"unit_of_measurement": "s"},
+                    )
+
+        new_options = {
+            **config_entry.options,
+            CONF_DURATION_UNIT: DURATION_MANUAL,
+            CONF_ENERGY_UNIT: ENERGY_KILOJOULES,
+        }
+        hass.config_entries.async_update_entry(
+            config_entry,
+            options=new_options,
+            version=3
+        )
+        _LOGGER.info(
+            "Migration to version 3 complete: duration_unit=manual, energy_unit=kJ"
+        )
+
+    _LOGGER.info("Successfully migrated WHOOP config entry to version %s.", CONFIG_FLOW_VERSION)
     return True

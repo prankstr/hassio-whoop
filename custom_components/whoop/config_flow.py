@@ -3,15 +3,39 @@
 import logging
 from typing import Any, Dict
 
+import voluptuous as vol
+
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigFlowResult
+from homeassistant.core import callback
 from homeassistant.helpers import config_entry_oauth2_flow
 from homeassistant.helpers.aiohttp_client import (
     async_get_clientsession,
 )
 from homeassistant.helpers.config_entry_oauth2_flow import LocalOAuth2Implementation
+from homeassistant.helpers.selector import (
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
+)
 
-from .const import DOMAIN, CONFIG_FLOW_VERSION, OAUTH2_AUTHORIZE, OAUTH2_TOKEN, SCOPES
+from .const import (
+    DOMAIN,
+    CONFIG_FLOW_VERSION,
+    OAUTH2_AUTHORIZE,
+    OAUTH2_TOKEN,
+    SCOPES,
+    CONF_DURATION_UNIT,
+    CONF_ENERGY_UNIT,
+    DURATION_SECONDS,
+    DURATION_MINUTES,
+    DURATION_HOURS,
+    DURATION_MANUAL,
+    ENERGY_KILOJOULES,
+    ENERGY_KILOCALORIES,
+    DEFAULT_DURATION_UNIT,
+    DEFAULT_ENERGY_UNIT,
+)
 from .api import WhoopApiClient
 
 _LOGGER = logging.getLogger(__name__)
@@ -101,7 +125,14 @@ class WhoopConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler):
 
         entry_title = f"{entry_title_name_part}'s WHOOP"
         _LOGGER.info("Creating config entry with title '%s'", entry_title)
-        return self.async_create_entry(title=entry_title, data=data)
+        return self.async_create_entry(
+            title=entry_title,
+            data=data,
+            options={
+                CONF_DURATION_UNIT: DEFAULT_DURATION_UNIT,
+                CONF_ENERGY_UNIT: DEFAULT_ENERGY_UNIT,
+            },
+        )
 
     async def async_step_reauth(self, entry_data: Dict[str, Any]) -> ConfigFlowResult:
         """Perform reauth upon an API authentication error or explicit request."""
@@ -125,3 +156,60 @@ class WhoopConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler):
             self.handler,
         )
         return await self.async_step_user()
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> config_entries.OptionsFlow:
+        """Get the options flow for this handler."""
+        return WhoopOptionsFlowHandler()
+
+
+class WhoopOptionsFlowHandler(config_entries.OptionsFlow):
+    """Handle WHOOP options."""
+
+    async def async_step_init(
+        self, user_input: Dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Manage the options."""
+        if user_input is not None:
+            return self.async_create_entry(title="", data=user_input)
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(
+                {
+                    vol.Optional(
+                        CONF_DURATION_UNIT,
+                        default=self.config_entry.options.get(
+                            CONF_DURATION_UNIT, DEFAULT_DURATION_UNIT
+                        ),
+                    ): SelectSelector(
+                        SelectSelectorConfig(
+                            options=[
+                                {"value": DURATION_SECONDS, "label": "Seconds"},
+                                {"value": DURATION_MINUTES, "label": "Minutes"},
+                                {"value": DURATION_HOURS, "label": "Hours"},
+                                {"value": DURATION_MANUAL, "label": "Manual"},
+                            ],
+                            mode=SelectSelectorMode.DROPDOWN,
+                        )
+                    ),
+                    vol.Optional(
+                        CONF_ENERGY_UNIT,
+                        default=self.config_entry.options.get(
+                            CONF_ENERGY_UNIT, DEFAULT_ENERGY_UNIT
+                        ),
+                    ): SelectSelector(
+                        SelectSelectorConfig(
+                            options=[
+                                {"value": ENERGY_KILOJOULES, "label": "Kilojoules (kJ)"},
+                                {"value": ENERGY_KILOCALORIES, "label": "Calories (kcal)"},
+                            ],
+                            mode=SelectSelectorMode.DROPDOWN,
+                        )
+                    ),
+                }
+            ),
+        )

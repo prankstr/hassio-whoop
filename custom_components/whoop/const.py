@@ -2,7 +2,21 @@
 DOMAIN = "whoop"
 ISSUE_URL = "https://github.com/prankstr/hassio-whoop/issues"
 
-CONFIG_FLOW_VERSION = 2
+CONFIG_FLOW_VERSION = 3
+
+CONF_DURATION_UNIT = "duration_unit"
+CONF_ENERGY_UNIT = "energy_unit"
+
+DURATION_SECONDS = "seconds"
+DURATION_MINUTES = "minutes"
+DURATION_HOURS = "hours"
+DURATION_MANUAL = "manual"
+
+ENERGY_KILOJOULES = "kj"
+ENERGY_KILOCALORIES = "kcal"
+
+DEFAULT_DURATION_UNIT = DURATION_HOURS
+DEFAULT_ENERGY_UNIT = ENERGY_KILOCALORIES
 
 OAUTH2_AUTHORIZE = "https://api.prod.whoop.com/oauth/oauth2/auth"
 OAUTH2_TOKEN = "https://api.prod.whoop.com/oauth/oauth2/token"

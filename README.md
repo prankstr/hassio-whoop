@@ -58,6 +58,15 @@ This integration can be installed via [HACS](https://hacs.xyz/) (Home Assistant 
 5. You will be redirected to the WHOOP website to log in and authorize the connection.
 6. After authorization, you'll be redirected back to Home Assistant, and the integration will be set up.
 
+## Options
+
+After installation, you can configure display units via **Settings > Devices & Services > WHOOP > Configure**:
+
+- **Duration Unit**: Choose how duration sensors (sleep times, workout zone times) are displayed:
+  - *Hours*, *Minutes*, *Seconds*, or *Manual* (configure per-entity in HA's entity settings)
+- **Energy Unit**: Choose how energy sensors are displayed:
+  - *Kilojoules (kJ)* or *Calories (kcal)*
+
 ## Available Sensors
 
 Only a few key WHOOP metrics enabled by default but many additional detailed sensors are created but as disabled initially. You can enable any sensor you wish to track from the Home Assistant **Settings > Devices & Services > Entities** tab (filter by the WHOOP integration or device).
