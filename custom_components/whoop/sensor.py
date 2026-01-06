@@ -22,7 +22,13 @@ from homeassistant.const import (
     UnitOfTemperature,
 )
 
-from .const import DOMAIN
+from .const import (
+    DOMAIN,
+    CONF_ENERGY_UNIT,
+    ENERGY_KILOJOULES,
+    ENERGY_KILOCALORIES,
+    DEFAULT_ENERGY_UNIT,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -208,6 +214,7 @@ async def async_setup_entry(
             float,
             1,
             enabled_by_default=False,
+            is_energy_sensor=True,
         ),
         WhoopDataSensor(
             coordinator,
@@ -377,12 +384,13 @@ async def async_setup_entry(
             "latest_sleep.score.stage_summary",
             "total_in_bed_time_milli",
             "Sleep Time in Bed",
-            UnitOfTime.SECONDS,
+            UnitOfTime.MILLISECONDS,
             "mdi:bed",
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
             enabled_by_default=False,
+            is_duration_sensor=True,
         ),
         WhoopDataSensor(
             coordinator,
@@ -391,12 +399,13 @@ async def async_setup_entry(
             "latest_sleep.score.stage_summary",
             "total_awake_time_milli",
             "Sleep Time Awake",
-            UnitOfTime.SECONDS,
+            UnitOfTime.MILLISECONDS,
             "mdi:sleep-off",
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
             enabled_by_default=False,
+            is_duration_sensor=True,
         ),
         WhoopDataSensor(
             coordinator,
@@ -405,12 +414,13 @@ async def async_setup_entry(
             "latest_sleep.score.stage_summary",
             "total_no_data_time_milli",
             "Sleep Time No Data",
-            UnitOfTime.SECONDS,
+            UnitOfTime.MILLISECONDS,
             "mdi:cloud-question",
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
             enabled_by_default=False,
+            is_duration_sensor=True,
         ),
         WhoopDataSensor(
             coordinator,
@@ -419,12 +429,13 @@ async def async_setup_entry(
             "latest_sleep.score.stage_summary",
             "total_light_sleep_time_milli",
             "Sleep Light Sleep Time",
-            UnitOfTime.SECONDS,
+            UnitOfTime.MILLISECONDS,
             "mdi:power-sleep",
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
             enabled_by_default=False,
+            is_duration_sensor=True,
         ),
         WhoopDataSensor(
             coordinator,
@@ -433,12 +444,13 @@ async def async_setup_entry(
             "latest_sleep.score.stage_summary",
             "total_slow_wave_sleep_time_milli",
             "Sleep SWS Time",
-            UnitOfTime.SECONDS,
+            UnitOfTime.MILLISECONDS,
             "mdi:sleep",
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
             enabled_by_default=False,
+            is_duration_sensor=True,
         ),
         WhoopDataSensor(
             coordinator,
@@ -447,12 +459,13 @@ async def async_setup_entry(
             "latest_sleep.score.stage_summary",
             "total_rem_sleep_time_milli",
             "Sleep REM Sleep Time",
-            UnitOfTime.SECONDS,
+            UnitOfTime.MILLISECONDS,
             "mdi:brain",
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
             enabled_by_default=False,
+            is_duration_sensor=True,
         ),
         WhoopDataSensor(
             coordinator,
@@ -489,12 +502,13 @@ async def async_setup_entry(
             "latest_sleep.score.sleep_needed",
             "baseline_milli",
             "Sleep Baseline Need",
-            UnitOfTime.SECONDS,
+            UnitOfTime.MILLISECONDS,
             "mdi:clock-outline",
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
             enabled_by_default=False,
+            is_duration_sensor=True,
         ),
         WhoopDataSensor(
             coordinator,
@@ -503,12 +517,13 @@ async def async_setup_entry(
             "latest_sleep.score.sleep_needed",
             "need_from_sleep_debt_milli",
             "Sleep Debt Need",
-            UnitOfTime.SECONDS,
+            UnitOfTime.MILLISECONDS,
             "mdi:clock-alert-outline",
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
             enabled_by_default=False,
+            is_duration_sensor=True,
         ),
         WhoopDataSensor(
             coordinator,
@@ -517,12 +532,13 @@ async def async_setup_entry(
             "latest_sleep.score.sleep_needed",
             "need_from_recent_strain_milli",
             "Sleep Strain Need",
-            UnitOfTime.SECONDS,
+            UnitOfTime.MILLISECONDS,
             "mdi:fire",
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
             enabled_by_default=False,
+            is_duration_sensor=True,
         ),
         WhoopDataSensor(
             coordinator,
@@ -531,12 +547,13 @@ async def async_setup_entry(
             "latest_sleep.score.sleep_needed",
             "need_from_recent_nap_milli",
             "Sleep Nap Credit",
-            UnitOfTime.SECONDS,
+            UnitOfTime.MILLISECONDS,
             "mdi:power-nap",
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
             enabled_by_default=False,
+            is_duration_sensor=True,
         ),
         WhoopWorkoutOverviewSensor(coordinator, entry, device_info),
         WhoopDataSensor(
@@ -595,6 +612,7 @@ async def async_setup_entry(
             float,
             1,
             enabled_by_default=False,
+            is_energy_sensor=True,
         ),
         WhoopDataSensor(
             coordinator,
@@ -663,12 +681,13 @@ async def async_setup_entry(
             "latest_workout.score.zone_durations",
             "zone_zero_milli",
             "Last Workout Zone 0 Time",
-            UnitOfTime.SECONDS,
+            UnitOfTime.MILLISECONDS,
             "mdi:heart-outline",
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
             enabled_by_default=False,
+            is_duration_sensor=True,
         ),
         WhoopDataSensor(
             coordinator,
@@ -677,12 +696,13 @@ async def async_setup_entry(
             "latest_workout.score.zone_durations",
             "zone_one_milli",
             "Last Workout Zone 1 Time",
-            UnitOfTime.SECONDS,
+            UnitOfTime.MILLISECONDS,
             "mdi:heart-outline",
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
             enabled_by_default=False,
+            is_duration_sensor=True,
         ),
         WhoopDataSensor(
             coordinator,
@@ -691,12 +711,13 @@ async def async_setup_entry(
             "latest_workout.score.zone_durations",
             "zone_two_milli",
             "Last Workout Zone 2 Time",
-            UnitOfTime.SECONDS,
+            UnitOfTime.MILLISECONDS,
             "mdi:heart-outline",
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
             enabled_by_default=False,
+            is_duration_sensor=True,
         ),
         WhoopDataSensor(
             coordinator,
@@ -705,12 +726,13 @@ async def async_setup_entry(
             "latest_workout.score.zone_durations",
             "zone_three_milli",
             "Last Workout Zone 3 Time",
-            UnitOfTime.SECONDS,
+            UnitOfTime.MILLISECONDS,
             "mdi:heart-pulse",
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
             enabled_by_default=False,
+            is_duration_sensor=True,
         ),
         WhoopDataSensor(
             coordinator,
@@ -719,12 +741,13 @@ async def async_setup_entry(
             "latest_workout.score.zone_durations",
             "zone_four_milli",
             "Last Workout Zone 4 Time",
-            UnitOfTime.SECONDS,
+            UnitOfTime.MILLISECONDS,
             "mdi:heart-pulse",
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
             enabled_by_default=False,
+            is_duration_sensor=True,
         ),
         WhoopDataSensor(
             coordinator,
@@ -733,12 +756,13 @@ async def async_setup_entry(
             "latest_workout.score.zone_durations",
             "zone_five_milli",
             "Last Workout Zone 5 Time",
-            UnitOfTime.SECONDS,
+            UnitOfTime.MILLISECONDS,
             "mdi:heart-pulse",
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             int,
             enabled_by_default=False,
+            is_duration_sensor=True,
         ),
     ]
     async_add_entities(sensors, update_before_add=True)
@@ -765,6 +789,8 @@ class WhoopDataSensor(CoordinatorEntity, SensorEntity):
         expected_type: type,
         precision: Optional[int] = None,
         enabled_by_default: bool = True,
+        is_duration_sensor: bool = False,
+        is_energy_sensor: bool = False,
     ):
         """Initialize the sensor."""
         super().__init__(coordinator)
@@ -773,30 +799,44 @@ class WhoopDataSensor(CoordinatorEntity, SensorEntity):
         self._entity_key = entity_key
         self._expected_type = expected_type
         self._precision = precision
+        self._base_friendly_name = friendly_name
+        self._base_unit = unit
+        self._is_duration_sensor = is_duration_sensor
+        self._is_energy_sensor = is_energy_sensor
 
         unique_id_path = self._data_path.replace(".", "_")
         unique_id_entity = self._entity_key.replace(".", "_")
         self._attr_unique_id = (
             f"{config_entry.entry_id}_{unique_id_path}_{unique_id_entity}"
         )
-        self._attr_name = friendly_name
         self._attr_device_info = device_info
         self._attr_entity_registry_enabled_default = enabled_by_default
+        self._attr_name = friendly_name
 
         if icon:
             self._attr_icon = icon
-        if unit:
-            self._attr_native_unit_of_measurement = unit
         if device_class:
             self._attr_device_class = device_class
         if state_class:
             self._attr_state_class = state_class
+        if unit:
+            self._attr_native_unit_of_measurement = unit
 
-        self._is_milli_duration_key = (
-            "milli" in self._entity_key.lower()
-            and device_class == SensorDeviceClass.DURATION
-            and unit == UnitOfTime.SECONDS
-        )
+        self._update_energy_unit_and_name()
+
+    def _update_energy_unit_and_name(self) -> None:
+        """Update unit and name based on config entry options (only for energy sensors)."""
+        if not self._is_energy_sensor:
+            return
+
+        options = self.config_entry.options
+        energy_unit = options.get(CONF_ENERGY_UNIT, DEFAULT_ENERGY_UNIT)
+        if energy_unit == ENERGY_KILOCALORIES:
+            self._attr_native_unit_of_measurement = "kcal"
+            self._attr_name = self._base_friendly_name.replace("Kilojoules", "Calories")
+        else:
+            self._attr_native_unit_of_measurement = UnitOfEnergy.KILO_JOULE
+            self._attr_name = self._base_friendly_name
 
     @property
     def native_value(self) -> Optional[Union[float, int, str, bool]]:
@@ -805,8 +845,15 @@ class WhoopDataSensor(CoordinatorEntity, SensorEntity):
         raw_value = _get_nested_value(self.coordinator.data, full_path)
         parsed_value = _parse_value(raw_value, self._expected_type, self._precision)
 
-        if self._is_milli_duration_key and isinstance(parsed_value, (int, float)):
-            return parsed_value / 1000
+        if parsed_value is None or not isinstance(parsed_value, (int, float)):
+            return parsed_value
+
+        if self._is_energy_sensor:
+            options = self.config_entry.options
+            energy_unit = options.get(CONF_ENERGY_UNIT, DEFAULT_ENERGY_UNIT)
+            if energy_unit == ENERGY_KILOCALORIES:
+                return int(parsed_value * 0.239006)
+
         return parsed_value
 
     @property
