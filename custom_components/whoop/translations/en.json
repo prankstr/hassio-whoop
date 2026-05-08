@@ -6,8 +6,13 @@
       },
       "reauth_confirm": {
         "title": "Reauthenticate WHOOP",
-        "description": "Please reauthenticate with your WHOOP account."
+        "description": "Your WHOOP authentication has expired. Please reauthenticate with your WHOOP account to restore data updates."
       }
+    },
+    "abort": {
+      "already_configured": "WHOOP is already configured for this account.",
+      "reauth_successful": "Reauthentication successful. Your WHOOP data will resume updating shortly.",
+      "reauth_failed": "Reauthentication failed. Please try again."
     }
   },
   "options": {

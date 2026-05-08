@@ -1,12 +1,13 @@
 """Config flow for WHOOP integration."""
 
 import logging
+from collections.abc import Mapping
 from typing import Any, Dict
 
 import voluptuous as vol
 
 from homeassistant import config_entries
-from homeassistant.config_entries import ConfigFlowResult
+from homeassistant.config_entries import ConfigFlowResult, SOURCE_REAUTH
 from homeassistant.core import callback
 from homeassistant.helpers import config_entry_oauth2_flow
 from homeassistant.helpers.aiohttp_client import (
@@ -89,7 +90,12 @@ class WhoopConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler):
         return await super().async_step_user(user_input)
 
     async def async_oauth_create_entry(self, data: Dict[str, Any]) -> ConfigFlowResult:
-        """Create an entry for the flow after successful OAuth. Set a dynamic title."""
+        """Create an entry for the flow after successful OAuth.
+
+        If this is a reauth flow, update the existing entry's token data
+        and reload instead of creating a new entry. This preserves all
+        existing entity enablement states and device associations.
+        """
         _LOGGER.debug(
             "WHOOP OAuth successful, attempting to set dynamic title for config entry."
         )
@@ -97,12 +103,15 @@ class WhoopConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler):
         access_token = data.get("token", {}).get("access_token")
         if not access_token:
             _LOGGER.error("Access token not found in OAuth data during entry creation.")
+            if self.source == SOURCE_REAUTH:
+                return self.async_abort(reason="reauth_failed")
             return self.async_create_entry(title=self.OAUTH2_CLIENT_NAME, data=data)
 
         session = async_get_clientsession(self.hass)
         api_client = WhoopApiClient(session, access_token)
 
         entry_title_name_part = "User"
+        user_id = None
 
         try:
             profile = await api_client.get_user_profile_basic()
@@ -117,11 +126,27 @@ class WhoopConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler):
 
                 if user_id:
                     await self.async_set_unique_id(str(user_id))
-                    self._abort_if_unique_id_configured(updates=data)
             else:
                 _LOGGER.warning("Could not fetch WHOOP profile to set a dynamic title.")
         except Exception as e:
             _LOGGER.error("Error fetching WHOOP profile for dynamic title: %s", e)
+
+        # If this is a reauth flow, update the existing entry and reload
+        # instead of creating a new one. This preserves entity states.
+        if self.source == SOURCE_REAUTH:
+            reauth_entry = self._get_reauth_entry()
+            _LOGGER.info(
+                "Reauth successful for '%s', updating existing config entry.",
+                reauth_entry.title,
+            )
+            return self.async_update_reload_and_abort(
+                reauth_entry,
+                data_updates=data,
+            )
+
+        # Normal first-time setup: prevent duplicate entries
+        if user_id:
+            self._abort_if_unique_id_configured(updates=data)
 
         entry_title = f"{entry_title_name_part}'s WHOOP"
         _LOGGER.info("Creating config entry with title '%s'", entry_title)
@@ -134,12 +159,14 @@ class WhoopConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler):
             },
         )
 
-    async def async_step_reauth(self, entry_data: Dict[str, Any]) -> ConfigFlowResult:
+    async def async_step_reauth(
+        self, entry_data: Mapping[str, Any]
+    ) -> ConfigFlowResult:
         """Perform reauth upon an API authentication error or explicit request."""
         _LOGGER.info(
-            "[%s] Starting reauthentication flow based on entry_data.", self.handler
+            "[%s] Starting reauthentication flow for existing entry.", self.handler
         )
-        return await self.async_step_reauth_confirm(entry_data)
+        return await self.async_step_reauth_confirm()
 
     async def async_step_reauth_confirm(
         self, user_input: Dict[str, Any] | None = None
@@ -152,7 +179,7 @@ class WhoopConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler):
             return self.async_show_form(step_id="reauth_confirm")
 
         _LOGGER.debug(
-            "[%s] Reauth confirmed, proceeding to user step to restart auth.",
+            "[%s] Reauth confirmed, proceeding to OAuth flow to refresh tokens.",
             self.handler,
         )
         return await self.async_step_user()
