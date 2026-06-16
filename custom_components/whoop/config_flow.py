@@ -1,6 +1,7 @@
 """Config flow for WHOOP integration."""
 
 import logging
+from collections.abc import Mapping
 from typing import Any, Dict
 
 import voluptuous as vol
@@ -105,7 +106,6 @@ class WhoopConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler):
         api_client = WhoopApiClient(session, access_token)
 
         entry_title_name_part = "User"
-        existing_entry = None
         user_id = None
 
         try:
@@ -120,7 +120,7 @@ class WhoopConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler):
                     entry_title_name_part = f"User {user_id}"
 
                 if user_id:
-                    existing_entry = await self.async_set_unique_id(str(user_id))
+                    await self.async_set_unique_id(str(user_id))
                     if self.source != config_entries.SOURCE_REAUTH:
                         self._abort_if_unique_id_configured(updates=data)
             else:
@@ -133,13 +133,13 @@ class WhoopConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler):
             entry = self._get_reauth_entry()
             if not user_id:
                 return self.async_abort(reason="reauth_failed")
-            if str(user_id) != entry.unique_id:
+            if entry.unique_id and str(user_id) != entry.unique_id:
                 return self.async_abort(reason="wrong_account")
             return self.async_update_reload_and_abort(
                 entry,
                 unique_id=str(user_id),
                 title=entry_title,
-                data=data,
+                data_updates=data,
             )
 
         _LOGGER.info("Creating config entry with title '%s'", entry_title)
@@ -152,12 +152,14 @@ class WhoopConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler):
             },
         )
 
-    async def async_step_reauth(self, entry_data: Dict[str, Any]) -> ConfigFlowResult:
+    async def async_step_reauth(
+        self, entry_data: Mapping[str, Any]
+    ) -> ConfigFlowResult:
         """Perform reauth upon an API authentication error or explicit request."""
         _LOGGER.info(
             "[%s] Starting reauthentication flow based on entry_data.", self.handler
         )
-        return await self.async_step_reauth_confirm(entry_data)
+        return await self.async_step_reauth_confirm()
 
     async def async_step_reauth_confirm(
         self, user_input: Dict[str, Any] | None = None
