@@ -139,7 +139,7 @@ class WhoopConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler):
                 entry,
                 unique_id=str(user_id),
                 title=entry_title,
-                data_updates=data,
+                data=data,
             )
 
         _LOGGER.info("Creating config entry with title '%s'", entry_title)
