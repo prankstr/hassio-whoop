@@ -212,21 +212,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     _apply_duration_unit_overrides(hass, entry)
 
-    # NO config entry update listener here, deliberately. Home Assistant fires
-    # update listeners on ANY change to the entry - including the hourly OAuth
-    # token write from OAuth2Session.async_ensure_token_valid() ->
-    # async_update_entry(). An update listener that reloads therefore rebuilt
-    # this integration ~24x/day, which cost 6 needless API calls per reload,
-    # punched a gap in every sensor's history, and - because
-    # ConfigEntries.async_reload() calls _abort_reauth_flows() - silently killed
-    # any reauth the user had open in a browser tab across an hour boundary.
-    #
-    # Reloading on an options change is core's job: WhoopOptionsFlowHandler
-    # subclasses OptionsFlowWithReload, so OptionsFlowManager.async_finish_flow
-    # reloads only when async_update_entry reports the options actually changed.
-    # Keeping both is an error - core raises ValueError if an update listener is
-    # registered alongside OptionsFlowWithReload, and using an update listener
-    # with async_update_reload_and_abort (the reauth path) breaks in HA 2026.12.
     return True
 
 
