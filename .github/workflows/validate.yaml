@@ -28,3 +28,22 @@ jobs:
         uses: hacs/action@main
         with:
           category: integration
+
+  regression:
+    name: Regression guard (no OAuth-token reload)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      # Parses the integration source with ast - no Home Assistant, no pytest,
+      # no dependencies to install.
+      - name: Run regression guards
+        run: |
+          rc=0
+          for f in tests/test_*.py; do
+            echo "--- $f"
+            python3 "$f" || rc=1
+          done
+          exit $rc
