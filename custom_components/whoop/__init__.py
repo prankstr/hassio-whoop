@@ -212,16 +212,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     _apply_duration_unit_overrides(hass, entry)
 
-    entry.async_on_unload(entry.add_update_listener(async_options_updated))
-
     return True
-
-
-async def async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Handle options update - apply unit overrides and reload."""
-    _LOGGER.info("WHOOP options updated for entry: %s", entry.title)
-    _apply_duration_unit_overrides(hass, entry)
-    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
