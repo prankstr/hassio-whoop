@@ -1,6 +1,7 @@
 """Sensor platform for WHOOP."""
 
 import logging
+from datetime import datetime
 from typing import Any, Dict, Optional, Union
 
 from homeassistant.components.sensor import (
@@ -13,6 +14,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util import dt as dt_util
 from homeassistant.const import (
     PERCENTAGE,
     UnitOfTime,
@@ -35,7 +37,7 @@ _LOGGER = logging.getLogger(__name__)
 
 def _parse_value(
     value: Any, target_type: type, precision: Optional[int] = None
-) -> Optional[Union[float, int, str, bool]]:
+) -> Optional[Union[float, int, str, bool, datetime]]:
     """Safely parse a value to the target type, with optional rounding."""
     if value is None:
         return None
@@ -52,6 +54,12 @@ def _parse_value(
                 return int(value)
         if target_type is bool:
             return bool(value)
+        if target_type is datetime:
+            if isinstance(value, datetime):
+                return value
+            if isinstance(value, str):
+                return dt_util.parse_datetime(value)
+            return None
         return str(value)
     except (ValueError, TypeError):
         return None
@@ -318,6 +326,32 @@ async def async_setup_entry(
             enabled_by_default=False,
         ),
         WhoopSleepOverviewSensor(coordinator, entry, device_info),
+        WhoopDataSensor(
+            coordinator,
+            entry,
+            device_info,
+            "latest_sleep",
+            "start",
+            "Sleep Start",
+            None,
+            "mdi:sleep",
+            SensorDeviceClass.TIMESTAMP,
+            None,
+            datetime,
+        ),
+        WhoopDataSensor(
+            coordinator,
+            entry,
+            device_info,
+            "latest_sleep",
+            "end",
+            "Sleep End",
+            None,
+            "mdi:weather-sunset-up",
+            SensorDeviceClass.TIMESTAMP,
+            None,
+            datetime,
+        ),
         WhoopDataSensor(
             coordinator,
             entry,
@@ -839,7 +873,7 @@ class WhoopDataSensor(CoordinatorEntity, SensorEntity):
             self._attr_name = self._base_friendly_name
 
     @property
-    def native_value(self) -> Optional[Union[float, int, str, bool]]:
+    def native_value(self) -> Optional[Union[float, int, str, bool, datetime]]:
         """Return the state of the sensor."""
         full_path = f"{self._data_path}.{self._entity_key}"
         raw_value = _get_nested_value(self.coordinator.data, full_path)
